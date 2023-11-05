@@ -1,6 +1,3 @@
-package com.blogPostApp.blogserver.config;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,40 +5,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
-
 @Configuration
 @EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter { // Make sure to extend WebSecurityConfigurerAdapter
 
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	
-	
-	
-	
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    public SecurityConfig(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public JWTAuthenticationFilter jwtAuthenticationFilter() {
         return new JWTAuthenticationFilter();
     }
-	
-	@Override
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-        
-	http.
-	csrf().disable()
-	.authorizeHttpRequests()
-	.anyRequest()
-	.authenticated()
-	.and()
-	.httpBasic();
-	
-	
-	}
-	
-	
-	
-	
+        http.csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/users/register").permitAll()
+            .anyRequest().authenticated();
+
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
 }

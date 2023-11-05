@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.util.StringUtils;
@@ -16,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.blogPostApp.blogserver.entities.User;
-
 
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -30,7 +30,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token) && jwtService.validateToken(token)) {
             User authenticatedUser = jwtService.parseToken(token);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(authenticatedUser,null,((Authentication) authenticatedUser).getAuthorities());
+            UserDetails userDetails = authenticatedUser.toUserDetails();
+            Authentication authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, authenticatedUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
@@ -39,6 +40,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private String extractTokenFromRequest(HttpServletRequest request) {
         // Extract the token from the Authorization header or another location as per your setup
-        return "yourToken"; // Implement your extraction logic
+        String token = request.getHeader("Authorization");
+        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+            return token.substring(7); // Remove "Bearer " prefix
+        }
+        return null;
     }
 }

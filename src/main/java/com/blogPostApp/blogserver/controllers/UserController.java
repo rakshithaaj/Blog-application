@@ -9,24 +9,24 @@ import com.blogPostApp.blogserver.config.JWTService;
 import com.blogPostApp.blogserver.entities.User;
 import com.blogPostApp.blogserver.services.UserService;
 
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private JWTService jwtService;
 
-	private User loggedInUser;
-
     // User registration
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<JwtResponse> registerUser(@RequestBody User user) {
         User newUser = userService.registerUser(user);
-        String token =jwtService.createToken(newUser);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        String token = jwtService.createToken(newUser);
+        JwtResponse response = new JwtResponse(token, newUser);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // User login
@@ -37,25 +37,24 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         
-    
-    String token = jwtService.createToken(loggedInUser);
-    JwtResponse response = new JwtResponse(token,loggedInUser);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+        String token = jwtService.createToken(loggedInUser);
+        JwtResponse response = new JwtResponse(token, loggedInUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // Edit user profile
     @PutMapping("/{userId}")
     public ResponseEntity<User> editUserProfile(@PathVariable int userId, @RequestBody User updatedUser) {
-        String token = null;
-		if(!jwtService.validateToken(token)) {
-        	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        	
+        String token = null; // Extract the token from the request headers
+        if (!jwtService.validateToken(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-    	
-    	User editedUser = userService.editUserProfile(userId, updatedUser);
+
+        User editedUser = userService.editUserProfile(userId, updatedUser);
         if (editedUser == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(editedUser, HttpStatus.OK);
     }
 }
+

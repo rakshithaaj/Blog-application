@@ -1,13 +1,16 @@
 package com.blogPostApp.blogserver.entities;
 
-import jakarta.persistence.*;
-import java.util.List;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import org.springframework.security.core.Authentication;
+import jakarta.persistence.*;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User   {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -18,7 +21,87 @@ public class User   {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private String password;
+    public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getProfilePicture() {
+		return profilePicture;
+	}
+
+	public void setProfilePicture(String profilePicture) {
+		this.profilePicture = profilePicture;
+	}
+
+	public String getBio() {
+		return bio;
+	}
+
+	public void setBio(String bio) {
+		this.bio = bio;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public List<Post> getPosts() {
+		return posts;
+	}
+
+	public void setPosts(List<Post> posts) {
+		this.posts = posts;
+	}
+
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
+
+	public List<Like> getLikes() {
+		return likes;
+	}
+
+	public void setLikes(List<Like> likes) {
+		this.likes = likes;
+	}
+
+	public List<User> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(List<User> following) {
+		this.following = following;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	private String password;
 
     @Column(name = "profile_picture")
     private String profilePicture;
@@ -42,7 +125,6 @@ public class User   {
     @JoinTable(name = "followers", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "following_user_id"))
     private List<User> following;
 
-    // constructors
     public User() {
     }
 
@@ -61,95 +143,50 @@ public class User   {
         this.following = following;
     }
 
-    // getters and setters
-    public int getId() {
-        return id;
+    // Implement methods from UserDetails interface
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Return the user's roles and authorities here
+        // Example: You can return a list of SimpleGrantedAuthority based on user roles
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Override
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public String getUsername() {
+        return username;
     }
 
-    public String getProfilePicture() {
-        return profilePicture;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Implement custom logic for account expiration
     }
 
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Implement custom logic for account locking
     }
 
-    public String getBio() {
-        return bio;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Implement custom logic for credentials expiration
     }
 
-    public void setBio(String bio) {
-        this.bio = bio;
+    @Override
+    public boolean isEnabled() {
+        return true; // Implement custom logic for user status
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
-    }
-
-    public List<Like> getLikes() {
-        return likes;
-    }
-
-    public void setLikes(List<Like> likes) {
-        this.likes = likes;
-    }
-
-    public List<User> getFollowing() {
-        return following;
-    }
-
-    public void setFollowing(List<User> following) {
-        this.following = following;
-    }
+	public UserDetails toUserDetails() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+    
+    
 
     // Getters and setters
-
 }
